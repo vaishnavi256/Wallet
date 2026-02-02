@@ -9,7 +9,7 @@ export default function SeedPhrase() {
   const generateSeedPhrase = async () => {
     try {
       const res = await axios.get(
-        "http://localhost:3000/generateSeedPhrase"
+        "https://wallet-backend-vert.vercel.app/generateSeedPhrase"
       );
 
       if (res.data.success) {

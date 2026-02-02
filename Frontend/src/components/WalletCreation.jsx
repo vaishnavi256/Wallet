@@ -10,7 +10,7 @@ export default function WalletCreation() {
     console.log (localStorage.getItem("seedPhrase"), Number(localStorage.getItem("chain")));
   try {
     const res = await axios.post(
-      "http://localhost:3000/generateWallet",
+      "https://wallet-backend-vert.vercel.app/generateWallet",
       { 
         seedPhrase: localStorage.getItem("seedPhrase"),
         coin_type: Number(localStorage.getItem("chain")) || 501,
