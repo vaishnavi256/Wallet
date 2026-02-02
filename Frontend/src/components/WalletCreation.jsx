@@ -1,23 +1,57 @@
-import { useState } from "react";
+import axios from "axios";
+import { useState, useEffect } from "react";
 
 export default function WalletCreation() {
-  const [wallets, setWallets] = useState([]);
+  const storedWallets = localStorage.getItem("wallets");
+  const [wallets, setWallets] = useState(storedWallets ? JSON.parse(storedWallets) : []);
+  
+  const createWallet = async () => {
+    console.log (wallets);
+    console.log (localStorage.getItem("seedPhrase"), Number(localStorage.getItem("chain")));
+  try {
+    const res = await axios.post(
+      "http://localhost:3000/generateWallet",
+      { 
+        seedPhrase: localStorage.getItem("seedPhrase"),
+        coin_type: Number(localStorage.getItem("chain")) || 501,
+        walletNum: wallets.length
+      }
+    );
 
-  function AddWallet() {
+    console.log("Wallet:", res.data.wallet);
+
     const newWalletDetails = {
-      wName: `Wallet${wallets.length + 1}`,
-      privateKey: "dfghjkl",
-      publicKey: "dfghjk",
-      showPublicKey: false,
+      privateKey: res.data.wallet.secretKey,
+      publicKey: res.data.wallet.publicKey,
+      showPrivKey: false
     };
 
+    // Update state
     setWallets((prev) => [...prev, newWalletDetails]);
+    console.log ()
+
+    // Persist wallets
+    localStorage.setItem(
+      "wallets",
+      JSON.stringify([...wallets, newWalletDetails])
+    );
+    window.location.reload();
+  } catch (error) {
+    console.log (error);
+    console.error(
+      error.response?.data?.error || "Wallet generation failed"
+    );
   }
+};
+
 
   function ClearWallet() {
     setWallets([]);
     localStorage.removeItem("chain");
-  }
+    localStorage.removeItem("wallets");
+    localStorage.removeItem("seedPhrase");
+    window.location.reload();
+  } 
 
   function togglePublicKey(index) {
     setWallets((prev) =>
@@ -30,18 +64,19 @@ export default function WalletCreation() {
   }
 
   function deleteWallet(index) {
+    setWallets((prev) => prev.filter((_, i) => i !== index));
+  }
 
-    setWallets((prev) =>
-        prev.filter((_, i) => i !== index)
-    );
-    }
+  useEffect(() => {
+    localStorage.setItem("wallets", JSON.stringify(wallets));
+  }, [wallets]);
 
   return (
     <div className="w-full mx-auto">
       {/* Buttons */}
       <div className="flex gap-4 p-4">
         <button
-          onClick={AddWallet}
+          onClick={createWallet}
           className="px-5 py-2 rounded-xl transition-all duration-100 border bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:scale-105 hover:bg-green-900"
         >
           Add Wallet
@@ -60,11 +95,11 @@ export default function WalletCreation() {
         {wallets.map((wallet, index) => (
           <div
             key={index}
-            className=" border border-gray-200 dark:border-gray-700 rounded-xl  p-4 shadow-sm bg-white dark:bg-gray-900 hover:shadow-md transition"
+            className=" border border-gray-200 dark:border-gray-700 rounded-xl  p-4 shadow-sm  hover:shadow-md transition"
           >
             <div className="flex justify-between">
                 <h2 className="text-lg font-semibold mb-2">
-              {wallet.wName}
+              Wallet {index + 1}
             </h2> <button 
                     onClick={() => deleteWallet(index)} 
                     className="px-4 py-1 rounded-xl transition-all duration-100 border bg-gray-100 dark:bg-black border-gray-300 dark:border-gray-600 hover:scale-105 hover:bg-red-900">

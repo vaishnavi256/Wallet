@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function ChainSelector() {
   const blockchains = [
@@ -16,6 +16,7 @@ export default function ChainSelector() {
   const handleChainChange = (selectedChain) => {
     setChain(selectedChain);
     localStorage.setItem("chain", selectedChain);
+    window.location.reload();
   };
 
   return (

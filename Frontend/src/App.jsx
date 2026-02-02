@@ -23,7 +23,7 @@ export default function App() {
         // Bloclchain Select
           <div className="flex flex-col p-10 gap-8 h-[80vh] text-xl">
             <p className="text-2xl">Select Blockchain</p>
-            <ChainSelector />
+            <ChainSelector key={chain} />
           </div> 
         : 
         <div className="p-10">
