@@ -1,7 +1,7 @@
 import { generateMnemonic, mnemonicToSeedSync, validateMnemonic } from "bip39";
 import { derivePath } from "ed25519-hd-key";
 import nacl from "tweetnacl";
-import { Keypair } from "@solana/web3.js";
+import { Keypair, Connection, PublicKey, LAMPORTS_PER_SOL } from "@solana/web3.js";
 
 export const generateSeedPhrase = (req, res) => {
   const seedPhrase = generateMnemonic();
@@ -47,4 +47,34 @@ export const generateWallet = (req, res) => {
         secretKey: Buffer.from(keypair.secretKey).toString("hex"),
         },
     });
+};
+
+export const getUserBalance = async (req, res) => {
+  try {
+    const { publicKey } = req.body;
+
+    if (!publicKey) {
+      return res.status(400).json({ error: "Public key required" });
+    }
+
+    const conn = new Connection(
+      "https://api.devnet.solana.com",
+      "confirmed"
+    );
+
+    const pubKey = new PublicKey(publicKey);
+
+    const lamports = await conn.getBalance(pubKey);
+    const balance = lamports / LAMPORTS_PER_SOL;
+
+    res.status(200).json({
+      balance
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      error: "Invalid public key or Solana RPC error"
+    });
+  }
 };

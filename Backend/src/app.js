@@ -6,7 +6,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: "https://vaish-wallet.vercel.app", 
+    origin: "*", 
   })
 );
 
