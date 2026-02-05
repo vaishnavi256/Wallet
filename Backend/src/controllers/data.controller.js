@@ -3,6 +3,11 @@ import { derivePath } from "ed25519-hd-key";
 import nacl from "tweetnacl";
 import { Keypair, Connection, PublicKey, LAMPORTS_PER_SOL } from "@solana/web3.js";
 
+const conn = new Connection(
+      "https://api.devnet.solana.com",
+      "confirmed"
+    );
+
 export const generateSeedPhrase = (req, res) => {
   const seedPhrase = generateMnemonic();
 
@@ -14,7 +19,7 @@ export const generateSeedPhrase = (req, res) => {
 
 export const generateWallet = (req, res) => {
     const { seedPhrase, coin_type = 501, walletNum = 0 } = req.body;
-    console.log (seedPhrase, coin_type, walletNum);
+    
     if (!seedPhrase) {
         return res.status(400).json({
         error: "Seed phrase not provided",
@@ -49,18 +54,13 @@ export const generateWallet = (req, res) => {
     });
 };
 
-export const getUserBalance = async (req, res) => {
+export const getBalance = async (req, res) => {
   try {
     const { publicKey } = req.body;
 
     if (!publicKey) {
       return res.status(400).json({ error: "Public key required" });
     }
-
-    const conn = new Connection(
-      "https://api.devnet.solana.com",
-      "confirmed"
-    );
 
     const pubKey = new PublicKey(publicKey);
 
@@ -72,9 +72,22 @@ export const getUserBalance = async (req, res) => {
     });
 
   } catch (err) {
-    console.error(err);
     res.status(500).json({
       error: "Invalid public key or Solana RPC error"
     });
   }
+};
+
+export const getTokens = async (req, res) => {
+  const { publicKey } = req.body; 
+  if (!publicKey) {
+    return res.status(400).json({ error: "Public key required" });
+  }
+
+  const pubKey = new PublicKey(publicKey);
+
+  const tokens = await conn.getTokenLargestAccounts(pubKey);
+  return res.status(200).json({
+    tokens,
+  });
 };
